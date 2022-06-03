@@ -1,0 +1,72 @@
+# -*- mode: ruby -*-
+# vi:set ft=ruby sw=2 ts=2 sts=2:
+
+NUM_MASTER_NODE = 2
+NUM_WORKER_NODE = 2
+
+IP_NW = "192.168.56."
+MASTER_IP_START = 10
+NODE_IP_START = 20
+LB_IP_START = 30
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "ubuntu/jammy64"
+
+  config.vm.box_check_update = false
+
+  (1..NUM_MASTER_NODE).each do |i|
+      config.vm.define "master-#{i}" do |node|
+        node.vm.provider "virtualbox" do |vb|
+            vb.name = "master-#{i}"
+            vb.memory = 2048
+            vb.cpus = 2
+            vb.customize ["modifyvm", :id, "--cpuexecutioncap", "40"]
+        end
+        node.vm.hostname = "master-#{i}"
+        node.vm.network :private_network, ip: IP_NW + "#{MASTER_IP_START + i}"
+        node.vm.network "forwarded_port", guest: 22, host: "#{2710 + i}"
+        node.vm.provision "post-install", :type => "shell", :path => "post-install.sh" do |s|
+          s.args = ["enp0s8"]
+        end
+        node.vm.provision "dns", type: "shell", :path => "dns.sh"
+
+      end
+  end
+
+  config.vm.define "lb" do |node|
+    node.vm.provider "virtualbox" do |vb|
+        vb.name = "lb"
+        vb.memory = 512
+        vb.cpus = 1
+        vb.customize ["modifyvm", :id, "--cpuexecutioncap", "40"]
+    end
+    node.vm.hostname = "lb"
+    node.vm.network :private_network, ip: IP_NW + "#{LB_IP_START}"
+	  node.vm.network "forwarded_port", guest: 22, host: 2730
+    node.vm.provision "post-install", :type => "shell", :path => "post-install.sh" do |s|
+      s.args = ["enp0s8"]
+    end
+    node.vm.provision "dns", type: "shell", :path => "dns.sh"
+
+  end
+
+  (1..NUM_WORKER_NODE).each do |i|
+    config.vm.define "worker-#{i}" do |node|
+        node.vm.provider "virtualbox" do |vb|
+            vb.name = "worker-#{i}"
+            vb.memory = 2048
+            vb.cpus = 2
+            vb.customize ["modifyvm", :id, "--cpuexecutioncap", "40"]
+        end
+        node.vm.hostname = "worker-#{i}"
+        node.vm.network :private_network, ip: IP_NW + "#{NODE_IP_START + i}"
+		    node.vm.network "forwarded_port", guest: 22, host: "#{2720 + i}"
+        node.vm.provision "post-install", :type => "shell", :path => "post-install.sh" do |s|
+          s.args = ["enp0s8"]
+        end
+        node.vm.provision "dns", type: "shell", :path => "dns.sh"
+
+    end
+  end
+end
