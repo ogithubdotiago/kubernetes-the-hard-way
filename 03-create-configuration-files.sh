@@ -53,9 +53,10 @@ printc "\n# Criando .kubeconfig admin\n"
         --client-key=$PATH_CERT/admin.key \
         --embed-certs=true \
         --kubeconfig=$PATH_CONFIG/admin.kubeconfig
-    kubectl config set-context default \
+    kubectl config set-context $CLUSTER_NAME \
         --cluster=$CLUSTER_NAME \
         --user=admin \
-        --kubeconfig=$PATH_CONFIG/admin.kubeconfig
+        --kubeconfig=$PATH_CONFIG/admin.kubeconfig \
+        --namespace=kube-system
     kubectl config use-context default --kubeconfig=$PATH_CONFIG/admin.kubeconfig
 printc "$(ls -1 $PATH_CONFIG/admin.kubeconfig)\n" "yellow"

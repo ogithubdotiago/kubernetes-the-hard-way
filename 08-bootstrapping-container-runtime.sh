@@ -6,101 +6,79 @@ printc "\n#############################################\n"
 printc "# Configurando Container Runtime containerd #\n"
 printc "#############################################\n"
 
-printc "\n# Instalando/Configurando dependencias do sistema operacional\n"
+printc "\n# Instalacao containerd $CONTAINERD_VERSION\n"
     for worker in worker-{1..2}; do
         printc "\n$worker\n" "yellow"
         vagrant ssh $worker -c " 
-            sudo apt-get -y update
-            sudo apt-get -q -y install socat conntrack ipset
-            sudo swapoff -a
-        "
-    done
-
-printc "\n# Download binarios containerd $CONTAINERD_VERSION\n"
-    for worker in worker-{1..2}; do
-        printc "\n$worker\n" "yellow"
-        vagrant ssh $worker -c " 
-            wget -q --show-progress --https-only --timestamping \
-            https://github.com/kubernetes-sigs/cri-tools/releases/download/$K8S_VERSION/crictl-$K8S_VERSION-linux-amd64.tar.gz \
-            https://github.com/opencontainers/runc/releases/download/$RUNC_VERSION/runc.amd64 \
-            https://github.com/containerd/containerd/releases/download/v$CONTAINERD_VERSION/containerd-$CONTAINERD_VERSION-linux-amd64.tar.gz \
-        "
-    done
-
-printc "\n# Criando diretorio containerd\n"
-    for worker in worker-{1..2}; do
-        printc "\n$worker\n" "yellow"
-        vagrant ssh $worker -c " 
-            sudo mkdir -v /etc/containerd/ \
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+            echo 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable' | sudo tee /etc/apt/sources.list.d/docker.list
+            sudo apt update
+            sudo apt install -y containerd.io=$CONTAINERD_VERSION*
         "
     done
 
 printc "\n# Configurando containerd\n"
     for worker in worker-{1..2}; do
         printc "\n$worker\n" "yellow"
-        vagrant ssh $worker -c "
-            sudo tar -xvf crictl-$K8S_VERSION-linux-amd64.tar.gz
-            sudo tar -xvf containerd-$CONTAINERD_VERSION-linux-amd64.tar.gz -C containerd
-            sudo mv -v runc.amd64 runc
-            chmod +x crictl runc 
-            sudo mv -v crictl runc /usr/local/bin/
-            sudo mv -v containerd/bin/* /bin/
+        vagrant ssh $worker -c " 
+            sudo mkdir -v -p /etc/containerd/
+            sudo containerd config default > /etc/containerd/config.toml
         "
     done
 
 cat << EOF | sudo tee $PATH_CONFIG/config.toml
-[plugins]
-  [plugins.cri.containerd]
-    snapshotter = "overlayfs"
-    [plugins.cri.containerd.default_runtime]
-      runtime_type = "io.containerd.runtime.v1.linux"
-      runtime_engine = "/usr/local/bin/runc"
-      runtime_root = ""
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+  SystemdCgroup = true
 EOF
+printc "$(ls -1 $PATH_CONFIG/config.toml)\n" "yellow"
+
+cat <<EOF | sudo tee $PATH_CONFIG/containerd.conf
+overlay
+br_netfilter
+EOF
+printc "$(ls -1 $PATH_CONFIG/containerd.conf)\n" "yellow"
+
+cat <<EOF | sudo tee $PATH_CONFIG/99-kubernetes-cri.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
+printc "$(ls -1 $PATH_CONFIG/99-kubernetes-cri.conf)\n" "yellow"
+
+cat <<EOF | sudo tee $PATH_CONFIG/crictl.yaml
+runtime-endpoint: unix:///run/containerd/containerd.sock
+EOF
+printc "$(ls -1 $PATH_CONFIG/crictl.yaml)\n" "yellow"
 
     for worker in worker-{1..2}; do
         printc "\n$worker\n" "yellow"
-        for file in $PATH_CONFIG/config.toml; do
+        for file in \
+            $PATH_CONFIG/config.toml \
+            $PATH_CONFIG/containerd.conf \
+            $PATH_CONFIG/99-kubernetes-cri.conf \
+            $PATH_CONFIG/crictl.yaml; do
             vagrant scp ${file} ${worker}:~/
         done
         vagrant ssh $worker -c "
-            sudo mv -v config.toml /etc/containerd/
+            sudo mv -v config.toml /etc/containerd/config.toml
+            sudo mv -v containerd.conf /etc/modules-load.d/containerd.conf
+            sudo mv -v 99-kubernetes-cri.conf /etc/sysctl.d/99-kubernetes-cri.conf
+            sudo mv -v crictl.yaml /etc/crictl.yaml
+            sudo modprobe overlay
+            sudo modprobe br_netfilter
+            sudo sysctl --system
         "
     done
 
-cat <<EOF | sudo tee $PATH_CONFIG/containerd.service
-[Unit]
-Description=containerd container runtime
-Documentation=https://containerd.io
-After=network.target
-
-[Service]
-ExecStartPre=/sbin/modprobe overlay
-ExecStart=/bin/containerd
-Restart=always
-RestartSec=5
-Delegate=yes
-KillMode=process
-OOMScoreAdjust=-999
-LimitNOFILE=1048576
-LimitNPROC=infinity
-LimitCORE=infinity
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
+printc "\n# Configurando crictl\n"
     for worker in worker-{1..2}; do
         printc "\n$worker\n" "yellow"
-        for file in $PATH_CONFIG/containerd.service; do
-            vagrant scp ${file} ${worker}:~/
-        done
         vagrant ssh $worker -c "
-            sudo mv -v containerd.service /etc/systemd/system/
-        "
-        vagrant ssh $worker -c "
-            sudo systemctl daemon-reload
-            sudo systemctl enable containerd
-            sudo systemctl start containerd
+            wget -q --show-progress --https-only --timestamping \
+            https://github.com/kubernetes-sigs/cri-tools/releases/download/$K8S_VERSION/crictl-$K8S_VERSION-linux-amd64.tar.gz
+            sudo tar -xvf crictl-$K8S_VERSION-linux-amd64.tar.gz
+            sudo chmod +x crictl
+            sudo mv -v crictl /usr/local/bin/
+            sudo systemctl restart containerd
         "
     done

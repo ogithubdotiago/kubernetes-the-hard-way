@@ -14,16 +14,18 @@ printc "\n# Download binarios control-plane $K8S_VERSION\n"
             https://storage.googleapis.com/kubernetes-release/release/$K8S_VERSION/bin/linux/amd64/kube-apiserver \
             https://storage.googleapis.com/kubernetes-release/release/$K8S_VERSION/bin/linux/amd64/kube-controller-manager \
             https://storage.googleapis.com/kubernetes-release/release/$K8S_VERSION/bin/linux/amd64/kube-scheduler \
-            https://storage.googleapis.com/kubernetes-release/release/$K8S_VERSION/bin/linux/amd64/kubectl
+            https://storage.googleapis.com/kubernetes-release/release/$K8S_VERSION/bin/linux/amd64/kubectl \
+            https://github.com/ahmetb/kubectx/releases/download/$KUBECTX_VERSION/kubectx \
+            https://github.com/ahmetb/kubectx/releases/download/$KUBENS_VERSION/kubens
         "
     done
 
-printc "\n# Instalando binarios control-plane $K8S_VERSION\n"
+printc "\n# Instalando binarios control-plane\n"
     for master in master-{1..2}; do
         printc "\n$master\n" "yellow"
         vagrant ssh $master -c "
-            chmod +x kube-apiserver kube-controller-manager kube-scheduler kubectl
-            sudo mv -v kube-apiserver kube-controller-manager kube-scheduler kubectl /usr/local/bin/
+            chmod +x kube-apiserver kube-controller-manager kube-scheduler kubectl kubectx kubens
+            sudo mv -v kube-apiserver kube-controller-manager kube-scheduler kubectl kubectx kubens /usr/local/bin/
         "
     done
 

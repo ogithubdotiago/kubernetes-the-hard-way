@@ -11,3 +11,4 @@ rm -f $PATH_CONFIG/*.yaml
 rm -f $PATH_CONFIG/*.service
 rm -f $PATH_CONFIG/*.toml
 rm -f $PATH_CONFIG/*.cfg
+rm -f $PATH_CONFIG/*.conf

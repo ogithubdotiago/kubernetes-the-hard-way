@@ -15,7 +15,7 @@ printc "\n# Download etcd $ETCD_VERSION\n"
         "
     done
 
-printc "\n# Instalando etcd $ETCD_VERSION\n"
+printc "\n# Instalando etcd\n"
     for master in master-{1..2}; do
         printc "\n$master\n" "yellow"
         vagrant ssh $master -c "
@@ -24,7 +24,7 @@ printc "\n# Instalando etcd $ETCD_VERSION\n"
         "
     done
 
-printc "\n# Copiando arquivos etcd $ETCD_VERSION\n"
+printc "\n# Copiando arquivos etcd\n"
     for master in master-{1..2}; do
         printc "\n$master\n" "yellow"
         for file in \
@@ -38,7 +38,7 @@ printc "\n# Copiando arquivos etcd $ETCD_VERSION\n"
         "
     done
 
-printc "\n# Configurando etcd $ETCD_VERSION\n"
+printc "\n# Configurando etcd\n"
     for master in master-{1..2}; do
         printc "\n$master\n" "yellow"
         for file in \
@@ -94,7 +94,7 @@ EOF
         "
     done
 
-printc "\n# Validando etcd $ETCD_VERSION\n"
+printc "\n# Validando etcd\n"
     for master in master-{1..2}; do
         printc "\n$master\n" "yellow"
         vagrant ssh $master -c "
