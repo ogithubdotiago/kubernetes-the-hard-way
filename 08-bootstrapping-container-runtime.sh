@@ -22,7 +22,6 @@ printc "\n# Configurando containerd\n"
         printc "\n$worker\n" "yellow"
         vagrant ssh $worker -c " 
             sudo mkdir -v -p /etc/containerd/
-            sudo containerd config default > /etc/containerd/config.toml
         "
     done
 

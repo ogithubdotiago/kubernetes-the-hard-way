@@ -1,12 +1,12 @@
-> Este material é uma cópia dos materiais originais [kelseyhightower](https://github.com/kelseyhightower/kubernetes-the-hard-way) e [mmumshad/kodekloud](https://github.com/mmumshad/kubernetes-the-hard-way).
+# Kubernetes The Hard Way
 
-# Kubernetes The Hard Way via VirtualBox
+> Este material é uma cópia dos materiais originais [kelseyhightower](https://github.com/kelseyhightower/kubernetes-the-hard-way) e [mmumshad/kodekloud](https://github.com/mmumshad/kubernetes-the-hard-way) para fins educacionais.
 
-Este tutorial orienta uma instalação de kubernetes no modo "the hard way" por Virtualbox com auxilio de scripts via shell script.
+Instalação cluster kubernetes no modo "The Hard Way" via Virtualbox com auxilio de scripts.
 
 ## Detalhes do ambiente
 
-* [Ubuntu](https://app.vagrantup.com/ubuntu/boxes/jammy64) v22.04
+* [Ubuntu](https://app.vagrantup.com/ubuntu/boxes/jammy64) 22.04 LTS
 * [Virtualbox](https://www.virtualbox.org/wiki/Downloads) v6.1.32
 * [Vagrant](https://www.vagrantup.com/downloads) v2.2.19
 * [HAProxy](http://www.haproxy.org/#down) v2.4.14
@@ -22,7 +22,22 @@ Este tutorial orienta uma instalação de kubernetes no modo "the hard way" por 
 
 ## Laboratório
 
+#### Info maquinas virtuais
+
+> Para acessar as maquinas virtuais, vagrant ssh \<hostname\>
+
+| hostname     | ip address    |
+|--------------|---------------|
+| master-1     | 192.168.56.11 |
+| master-2     | 192.168.56.11 |
+| worker-1     | 192.168.56.21 |
+| worker-2     | 192.168.56.22 |
+| loadbalancer | 192.168.56.30 |
+
 #### Definir path para diretorio do vagrant
+
+> Definindo o VAGRANT_CWD, não é necessário rodar os comandos do vagrant dentro do path onde esta o arquivo Vagrantfile.
+
 ```bash
 export VAGRANT_CWD="$(pwd)/vagrant/"
 ```
@@ -37,7 +52,7 @@ bash 01-configure-prerequisites.sh
 vagrant up
 ```
 
-#### Instalação kubernetes
+#### Instalação cluster kubernetes
 ```bash
 bash bootstrapping.sh
 ```

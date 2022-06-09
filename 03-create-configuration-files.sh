@@ -53,7 +53,7 @@ printc "\n# Criando .kubeconfig admin\n"
         --client-key=$PATH_CERT/admin.key \
         --embed-certs=true \
         --kubeconfig=$PATH_CONFIG/admin.kubeconfig
-    kubectl config set-context $CLUSTER_NAME \
+    kubectl config set-context default \
         --cluster=$CLUSTER_NAME \
         --user=admin \
         --kubeconfig=$PATH_CONFIG/admin.kubeconfig \

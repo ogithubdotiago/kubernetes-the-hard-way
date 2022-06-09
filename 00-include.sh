@@ -25,6 +25,10 @@ HELM_VERSION="v3.9.0"
 KUBECTX_VERSION="v0.9.4"
 KUBENS_VERSION="v0.9.4"
 
+#addons
+PATH_LDAP="addons/ldap"
+PATH_DEX="addons/dex"
+
 #custom_print
 printc() {
     if [ "$2" == "yellow" ]; then

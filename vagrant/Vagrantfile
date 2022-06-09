@@ -34,14 +34,14 @@ Vagrant.configure("2") do |config|
       end
   end
 
-  config.vm.define "lb" do |node|
+  config.vm.define "loadbalancer" do |node|
     node.vm.provider "virtualbox" do |vb|
-        vb.name = "lb"
+        vb.name = "loadbalancer"
         vb.memory = 512
         vb.cpus = 1
         vb.customize ["modifyvm", :id, "--cpuexecutioncap", "40"]
     end
-    node.vm.hostname = "lb"
+    node.vm.hostname = "loadbalancer"
     node.vm.network :private_network, ip: IP_NW + "#{LB_IP_START}"
 	  node.vm.network "forwarded_port", guest: 22, host: 2730
     node.vm.provision "post-install", :type => "shell", :path => "post-install.sh" do |s|

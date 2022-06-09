@@ -7,7 +7,7 @@ printc "# Configurando Load Balancer HAProxy #\n"
 printc "######################################\n"
 
 printc "\n# Download HAProxy $HAPROXY_VERSION\n"
-    vagrant ssh lb -c "
+    vagrant ssh loadbalancer -c "
         sudo apt-get -y update \
         && sudo apt-get install -q -y haproxy=$HAPROXY_VERSION*
     "
@@ -29,8 +29,8 @@ backend kubernetes-master-nodes
     server master-2 $NET_CIDR.12:6443 check fall 3 rise 2
 EOF
 
-    vagrant scp $PATH_CONFIG/haproxy.cfg lb:~/
-    vagrant ssh lb -c "
+    vagrant scp $PATH_CONFIG/haproxy.cfg loadbalancer:~/
+    vagrant ssh loadbalancer -c "
         sudo mv -v haproxy.cfg /etc/haproxy/haproxy.cfg
         sudo systemctl daemon-reload
         sudo systemctl enable haproxy

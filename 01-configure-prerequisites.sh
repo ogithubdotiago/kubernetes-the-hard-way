@@ -2,7 +2,7 @@
 
 source $(dirname $0)/00-include.sh
 
-printc "\n#Rodar vagrant <cmd> sem estar no path\n"
+printc "\n#Rodar vagrant <cmd> sem estar no path do Vagrantfile\n"
     echo export VAGRANT_CWD="$(pwd)/vagrant/"
 
 printc "\n#Visualizando dhcp virtualbox\n"

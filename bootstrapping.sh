@@ -2,6 +2,7 @@
 
 source $(dirname $0)/00-include.sh
 
+#default
 source 02-create-certificate-authority.sh ; sleep 5
 source 03-create-configuration-files.sh ; sleep 5
 source 04-create-data-encryption-keys.sh ; sleep 5
@@ -13,3 +14,6 @@ source 09-bootstrapping-nodes.sh ; sleep 5
 source 10-bootstrapping-pod-networking.sh ; sleep 5
 source 11-configure-apiserver-to-kubelet.sh ; sleep 5
 source 12-bootstrapping-dns.sh; sleep 5
+
+#addons
+source 13-bootstrapping-dex-ldap.sh; sleep 5

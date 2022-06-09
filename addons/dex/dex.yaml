@@ -1,0 +1,143 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dex
+  labels:
+    app: dex
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dex
+  labels:
+    app: dex
+rules:
+- apiGroups: ["dex.coreos.com"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dex
+  labels:
+    app: dex
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: dex
+subjects:
+- kind: ServiceAccount
+  name: dex
+  namespace: kube-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dex
+  labels:
+    app: dex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dex
+  template:
+    metadata:
+      labels:
+        app: dex
+    spec:
+      serviceAccountName: dex
+      containers:
+      - image: ghcr.io/dexidp/dex:v2.30.0
+        name: dex
+        command: ["/usr/local/bin/dex", "serve", "/etc/dex/cfg/config.yaml"]
+        ports:
+        - name: https
+          containerPort: 5556
+        volumeMounts:
+        - name: dex-config
+          mountPath: /etc/dex/cfg
+        - name: dex-tls
+          mountPath: /etc/dex/tls
+      volumes:
+      - name: dex-config
+        configMap:
+          name: dex-config
+          items:
+          - key: config.yaml
+            path: config.yaml
+      - name: dex-tls
+        secret:
+          secretName: dex-tls
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: dex-config
+  labels:
+    app: dex
+data:
+  config.yaml: |
+    issuer: https://192.168.56.21:32000
+    storage:
+      type: kubernetes
+      config:
+        inCluster: true
+    web:
+      https: 0.0.0.0:5556
+      tlsCert: /etc/dex/tls/tls.crt
+      tlsKey: /etc/dex/tls/tls.key
+    connectors:
+    - type: ldap
+      name: OpenLDAP
+      id: ldap
+      config:
+        host: openldap.kube-system.svc:389
+        insecureNoSSL: true
+        bindDN: cn=admin,dc=lab,dc=local
+        bindPW: admin
+        usernamePrompt: Email Address
+        userSearch:
+          baseDN: ou=people,dc=lab,dc=local
+          filter: "(objectclass=inetOrgPerson)"
+          username: mail
+          idAttr: DN
+          emailAttr: mail
+          nameAttr: cn
+        groupSearch:
+          baseDN: ou=groups,dc=lab,dc=local
+          filter: "(objectClass=groupOfNames)"
+          userMatchers:
+          - userAttr: DN
+            groupAttr: member
+          nameAttr: cn
+    oauth2:
+      skipApprovalScreen: true
+    staticClients:
+    - id: gangway
+      redirectURIs:
+      - 'http://192.168.56.21:32001/callback'
+      name: 'gangway'
+      secret: ZXhhbXBsZS1hcHAtc2VjcmV0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dex
+  labels:
+    app: dex
+spec:
+  type: NodePort
+  ports:
+  - name: dex
+    port: 5556
+    protocol: TCP
+    targetPort: 5556
+    nodePort: 32000
+  selector:
+    app: dex

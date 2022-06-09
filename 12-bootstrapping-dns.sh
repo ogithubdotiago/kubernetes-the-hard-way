@@ -39,6 +39,7 @@ printc "\n# Validando instalação CoreDNS\n"
     vagrant ssh master-1 -c "
         kubectl apply -f https://k8s.io/examples/admin/dns/dnsutils.yaml
         kubectl wait --for=condition=ready pod/dnsutils -n default --timeout=120s
-        kubectl exec -i -t dnsutils -n default -- nslookup kubernetes.default
+        sleep 60
+        kubectl exec -it dnsutils -n default -- nslookup kubernetes.default
         kubectl delete pod dnsutils -n default
     "
