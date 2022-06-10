@@ -83,7 +83,7 @@ metadata:
     app: dex
 data:
   config.yaml: |
-    issuer: https://192.168.56.21:32000
+    issuer: https://192.168.56.40:32000
     storage:
       type: kubernetes
       config:
@@ -121,7 +121,7 @@ data:
     staticClients:
     - id: gangway
       redirectURIs:
-      - 'http://192.168.56.21:32001/callback'
+      - 'http://192.168.56.40:32001/callback'
       name: 'gangway'
       secret: ZXhhbXBsZS1hcHAtc2VjcmV0
 ---

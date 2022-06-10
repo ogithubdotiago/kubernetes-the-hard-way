@@ -45,7 +45,7 @@ printc "\n# Criando kubelet .kubeconfig\n"
         kubectl config set-cluster $CLUSTER_NAME \
             --certificate-authority=$PATH_CERT/ca.crt \
             --embed-certs=true \
-            --server=https://${LB_ADDRESS}:6443 \
+            --server=https://${IP_LB_MASTER}:6443 \
             --kubeconfig=$PATH_CONFIG/$worker.kubeconfig
         kubectl config set-credentials system:node:$worker \
             --client-certificate=$PATH_CERT/$worker.crt \
@@ -63,7 +63,7 @@ printc "\n# Criando kube-proxy .kubeconfig\n"
     kubectl config set-cluster $CLUSTER_NAME \
         --certificate-authority=$PATH_CERT/ca.crt \
         --embed-certs=true \
-        --server=https://${LB_ADDRESS}:6443 \
+        --server=https://${IP_LB_MASTER}:6443 \
         --kubeconfig=$PATH_CONFIG/kube-proxy.kubeconfig
     kubectl config set-credentials system:kube-proxy \
         --client-certificate=$PATH_CERT/kube-proxy.crt \
@@ -95,7 +95,7 @@ authorization:
   mode: Webhook
 clusterDomain: "cluster.local"
 clusterDNS:
-  - "10.96.0.10"
+  - "$IP_SVC_DNS"
 resolvConf: "/run/systemd/resolve/resolv.conf"
 runtimeRequestTimeout: "15m"
 EOF

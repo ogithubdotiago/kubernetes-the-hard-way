@@ -15,18 +15,44 @@ printc "\n# Download HAProxy $HAPROXY_VERSION\n"
 printc "\n# Configurando HAProxy $HAPROXY_VERSION\n"
 
 cat <<EOF | sudo tee $PATH_CONFIG/haproxy.cfg 
-frontend kubernetes
-    bind $LB_ADDRESS:6443
+frontend kube-apiserver
+    bind $IP_LB_MASTER:6443
     option tcplog
     mode tcp
-    default_backend kubernetes-master-nodes
+    default_backend kube-apiserver
 
-backend kubernetes-master-nodes
+frontend dex
+    bind $IP_LB_WORKER:32000
+    option tcplog
+    mode tcp
+    default_backend dex
+
+frontend gangway
+    bind $IP_LB_WORKER:32001
+    option tcplog
+    mode tcp
+    default_backend gangway
+
+backend kube-apiserver
     mode tcp
     balance roundrobin
     option tcp-check
     server master-1 $NET_CIDR.11:6443 check fall 3 rise 2
     server master-2 $NET_CIDR.12:6443 check fall 3 rise 2
+
+backend dex
+    mode tcp
+    balance roundrobin
+    option tcp-check
+    server worker-1 $NET_CIDR.21:32000 check fall 3 rise 2
+    server worker-2 $NET_CIDR.22:32000 check fall 3 rise 2
+
+backend gangway
+    mode tcp
+    balance roundrobin
+    option tcp-check
+    server worker-1 $NET_CIDR.21:32001 check fall 3 rise 2
+    server worker-2 $NET_CIDR.22:32001 check fall 3 rise 2
 EOF
 
     vagrant scp $PATH_CONFIG/haproxy.cfg loadbalancer:~/

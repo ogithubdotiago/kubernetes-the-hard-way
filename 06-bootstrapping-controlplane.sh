@@ -38,6 +38,7 @@ printc "\n# Configurando kube-apiserver\n"
             $PATH_CERT/kube-apiserver.crt $PATH_CERT/kube-apiserver.key \
             $PATH_CERT/service-account.key $PATH_CERT/service-account.crt \
             $PATH_CERT/etcd-server.key $PATH_CERT/etcd-server.crt \
+            $PATH_CERT/ca-login.crt \
             $PATH_CONFIG/encryption-config.yaml; do
             vagrant scp ${file} ${master}:~/
         done
@@ -50,6 +51,7 @@ printc "\n# Configurando kube-apiserver\n"
             etcd-server.key etcd-server.crt \
             encryption-config.yaml /var/lib/kubernetes/
             sudo mv -v admin.kubeconfig ~/.kube/config
+            sudo mv -v ca-login.crt /var/lib/kubernetes/
         "
         GET_INTERNAL_IP=$(vagrant ssh $master -c "bash get_internal_ip.sh")
         INTERNAL_IP="${GET_INTERNAL_IP/$'\r'/}"
@@ -84,11 +86,16 @@ ExecStart=/usr/local/bin/kube-apiserver \\
   --runtime-config='api/all=true' \\
   --service-account-key-file=/var/lib/kubernetes/service-account.crt \\
   --service-account-signing-key-file=/var/lib/kubernetes/service-account.key \\
-  --service-account-issuer=https://${LB_ADDRESS}:6443 \\
-  --service-cluster-ip-range=10.96.0.0/24 \\
+  --service-account-issuer=https://${IP_LB_MASTER}:6443 \\
+  --service-cluster-ip-range=$NET_CIDR_SVC \\
   --service-node-port-range=30000-32767 \\
   --tls-cert-file=/var/lib/kubernetes/kube-apiserver.crt \\
   --tls-private-key-file=/var/lib/kubernetes/kube-apiserver.key \\
+  --oidc-issuer-url=https://$IP_LB_WORKER:32000 \\
+  --oidc-client-id=gangway \\
+  --oidc-ca-file=/var/lib/kubernetes/ca-login.crt \\
+  --oidc-username-claim=email \\
+  --oidc-groups-claim=groups \\
   --v=2
 Restart=on-failure
 RestartSec=5
@@ -130,7 +137,7 @@ ExecStart=/usr/local/bin/kube-controller-manager \\
   --leader-elect=true \\
   --root-ca-file=/var/lib/kubernetes/ca.crt \\
   --service-account-private-key-file=/var/lib/kubernetes/service-account.key \\
-  --service-cluster-ip-range=10.96.0.0/24 \\
+  --service-cluster-ip-range=$NET_CIDR_SVC \\
   --use-service-account-credentials=true \\
   --v=2
 Restart=on-failure

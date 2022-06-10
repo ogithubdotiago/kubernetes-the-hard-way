@@ -47,7 +47,7 @@ DNS.1 = kubernetes
 DNS.2 = kubernetes.default
 DNS.3 = kubernetes.default.svc
 DNS.4 = kubernetes.default.svc.cluster.local
-IP.1 = 10.96.0.1
+IP.1 = $IP_SVC_K8S
 IP.2 = $NET_CIDR.11
 IP.3 = $NET_CIDR.12
 IP.4 = $NET_CIDR.30
@@ -90,3 +90,29 @@ printc "\n# Criando certificado para o service-account\n"
     openssl x509 -req -in $PATH_CERT/service-account.csr -CA $PATH_CERT/ca.crt -CAkey $PATH_CERT/ca.key -CAcreateserial \
         -out $PATH_CERT/service-account.crt -days $CERT_DAYS
 printc "$(ls -1 $PATH_CERT/service-account*)\n" "yellow"
+
+printc "\n# Criando certificado para o Dex\n"
+cat << EOF > $PATH_CERT/openssl-login.cnf
+[req]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = dex.lab.local
+DNS.2 = login.lab.local
+IP.1 = $IP_LB_WORKER
+IP.2 = $NET_CIDR.21
+IP.3 = $NET_CIDR.22
+EOF
+
+    openssl genrsa -out $PATH_CERT/ca-login.key 2048
+    openssl req -x509 -new -nodes -key $PATH_CERT/ca-login.key -days $CERT_DAYS -out $PATH_CERT/ca-login.crt -subj "/CN=kube-ca"
+    openssl genrsa -out $PATH_CERT/login.key 2048
+    openssl req -new -key $PATH_CERT/login.key -out $PATH_CERT/login.csr -subj "/CN=kube-ca" -config $PATH_CERT/openssl-login.cnf
+    openssl x509 -req -in $PATH_CERT/login.csr -CA $PATH_CERT/ca-login.crt -CAkey $PATH_CERT/ca-login.key -CAcreateserial \
+        -out $PATH_CERT/login.crt -days $CERT_DAYS -extensions v3_req -extfile $PATH_CERT/openssl-login.cnf
+printc "$(ls -1 $PATH_CERT/*login*)\n" "yellow"

@@ -30,7 +30,7 @@ printc "\n# Instalando CoreDNS $COREDNS_VERSION\n"
         helm --namespace=kube-system install coredns \
         coredns/coredns \
         --set image.tag=$COREDNS_VERSION \
-        --set service.clusterIP=$IP_SVC_COREDNS \
+        --set service.clusterIP=$IP_SVC_DNS \
         --set replicaCount=2 \
         --set serviceAccount.create=true
     "

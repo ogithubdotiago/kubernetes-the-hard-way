@@ -16,4 +16,4 @@ source 11-configure-apiserver-to-kubelet.sh ; sleep 5
 source 12-bootstrapping-dns.sh; sleep 5
 
 #addons
-source 13-bootstrapping-dex-ldap.sh; sleep 5
+source 13-bootstrapping-gangway-dex-ldap.sh; sleep 5

@@ -8,17 +8,29 @@ metadata:
 data:
   gangway.yaml: |
     clusterName: "kubernetes-jilo"
-    authorizeURL: "https://192.168.56.21:32000/auth"
-    tokenURL: "https://192.168.56.21:32000/token"
-    redirectURL: "http://192.168.56.21:32001/callback"
+    authorizeURL: "https://192.168.56.40:32000/auth"
+    tokenURL: "https://192.168.56.40:32000/token"
+    redirectURL: "http://192.168.56.40:32001/callback"
     clientID: "gangway"
     clientSecret: ZXhhbXBsZS1hcHAtc2VjcmV0
     usernameClaim: "sub"
     emailClaim: "email"
     apiServerURL: https://192.168.56.30:6443
-    trustedCAPath: /etc/dex/tls/tls.crt
+    trustedCAPath: /cacerts/ca-login.crt
+    allowEmptyClientSecret: true
+    scopes: ["groups", "openid", "profile", "email", "offline_access"]
 ---
-apiVersion: apps/v1beta1
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gangway-key
+  labels:
+    app: gangway
+type: Opaque
+stringData:
+  sessionkey: secretgangwaysecret
+---
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gangway
@@ -36,7 +48,7 @@ spec:
     spec:
       containers:
         - name: gangway
-          image: gcr.io/heptio-images/gangway:v2.0.0
+          image: gcr.io/heptio-images/gangway:v3.0.0
           imagePullPolicy: Always
           command: ["gangway", "-config", "/gangway/gangway.yaml"]
           env:
@@ -44,15 +56,15 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: gangway-key
-                  key: sesssionkey
+                  key: sessionkey
           ports:
             - containerPort: 8080
               protocol: TCP
           volumeMounts:
             - name: gangway
               mountPath: /gangway/
-            - name: dex-tls
-              mountPath: /etc/dex/tls
+            - name: dex-ca
+              mountPath: /cacerts/
           livenessProbe:
             httpGet:
               path: /
@@ -72,9 +84,9 @@ spec:
         - name: gangway
           configMap:
             name: gangway
-        - name: dex-tls
+        - name: dex-ca
           secret:
-            secretName: dex-tls
+            secretName: dex-ca
 ---
 apiVersion: v1
 kind: Service
@@ -91,4 +103,3 @@ spec:
     nodePort: 32001
   selector:
     app: gangway
-

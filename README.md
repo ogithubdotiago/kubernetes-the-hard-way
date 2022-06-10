@@ -56,3 +56,11 @@ vagrant up
 ```bash
 bash bootstrapping.sh
 ```
+
+#### URLs de acesso via loadbalancer (HAProxy)
+
+| URL             | Endereço            |
+|-----------------|---------------------|
+| kube-apiserver  | 192.168.56.30:6443  |
+| dex             | 192.168.56.40:32000 |
+| gangway         | 192.168.56.40:32001 |

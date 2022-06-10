@@ -6,8 +6,11 @@ CERT_DAYS="3650"
 
 #network
 NET_CIDR="192.168.56"
-LB_ADDRESS="192.168.56.30"
-IP_SVC_COREDNS="10.96.0.10"
+NET_CIDR_SVC="10.96.0.0/24"
+IP_SVC_K8S="10.96.0.1"
+IP_SVC_DNS="10.96.0.10"
+IP_LB_MASTER="192.168.56.30"
+IP_LB_WORKER="192.168.56.40"
 
 #path
 PATH_TEMP="temp"
@@ -28,6 +31,7 @@ KUBENS_VERSION="v0.9.4"
 #addons
 PATH_LDAP="addons/ldap"
 PATH_DEX="addons/dex"
+PATH_GANGWAY="addons/gangway"
 
 #custom_print
 printc() {
