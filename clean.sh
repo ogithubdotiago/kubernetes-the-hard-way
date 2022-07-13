@@ -12,3 +12,4 @@ rm -f $PATH_CONFIG/*.service
 rm -f $PATH_CONFIG/*.toml
 rm -f $PATH_CONFIG/*.cfg
 rm -f $PATH_CONFIG/*.conf
+rm -f $PATH_CONFIG/*.conflist

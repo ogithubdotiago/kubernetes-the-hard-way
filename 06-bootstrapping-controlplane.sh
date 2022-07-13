@@ -24,7 +24,7 @@ printc "\n# Instalando binarios control-plane\n"
     for master in master-{1..2}; do
         printc "\n$master\n" "yellow"
         vagrant ssh $master -c "
-            chmod +x kube-apiserver kube-controller-manager kube-scheduler kubectl kubectx kubens
+            chmod -v +x kube-apiserver kube-controller-manager kube-scheduler kubectl kubectx kubens
             sudo mv -v kube-apiserver kube-controller-manager kube-scheduler kubectl kubectx kubens /usr/local/bin/
         "
     done
@@ -118,7 +118,7 @@ printc "\n# Configurando kube-controller-manager\n"
         printc "\n$master\n" "yellow"
         vagrant scp $PATH_CONFIG/kube-controller-manager.kubeconfig ${master}:~/
         vagrant ssh $master -c "
-            sudo cp kube-controller-manager.kubeconfig /var/lib/kubernetes/
+            sudo cp -v kube-controller-manager.kubeconfig /var/lib/kubernetes/
         "
 
 cat <<EOF | sudo tee $PATH_CONFIG/kube-controller-manager.service
@@ -129,7 +129,7 @@ Documentation=https://github.com/kubernetes/kubernetes
 [Service]
 ExecStart=/usr/local/bin/kube-controller-manager \\
   --address=0.0.0.0 \\
-  --cluster-cidr=$NET_CIDR.0/24 \\
+  --cluster-cidr=$NET_CIDR_POD \\
   --cluster-name=kubernetes \\
   --cluster-signing-cert-file=/var/lib/kubernetes/ca.crt \\
   --cluster-signing-key-file=/var/lib/kubernetes/ca.key \\
@@ -161,7 +161,7 @@ printc "\n# Configurando kube-scheduler\n"
         printc "\n$master\n" "yellow"
         vagrant scp $PATH_CONFIG/kube-scheduler.kubeconfig ${master}:~/
         vagrant ssh $master -c "
-            sudo cp kube-scheduler.kubeconfig /var/lib/kubernetes/
+            sudo cp -v kube-scheduler.kubeconfig /var/lib/kubernetes/
         "
 
 cat <<EOF | sudo tee $PATH_CONFIG/kube-scheduler.service
@@ -188,13 +188,5 @@ EOF
             sudo systemctl daemon-reload
             sudo systemctl enable kube-scheduler.service
             sudo systemctl restart kube-scheduler.service
-        "
-    done
-
-printc "\n# Validando control-plane\n"
-    for master in master-{1..2}; do
-        printc "\n$master\n" "yellow"
-        vagrant ssh $master -c "
-            kubectl cluster-info
         "
     done

@@ -16,4 +16,3 @@ printc "\n# Instalando plugin vagrant scp\n"
     else
         vagrant plugin list |grep scp
     fi
-

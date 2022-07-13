@@ -20,7 +20,7 @@ printc "\n# Instalando etcd\n"
         printc "\n$master\n" "yellow"
         vagrant ssh $master -c "
             tar -xvf etcd-$ETCD_VERSION-linux-amd64.tar.gz
-            sudo mv etcd-$ETCD_VERSION-linux-amd64/etcd* /usr/local/bin/
+            sudo mv -v etcd-$ETCD_VERSION-linux-amd64/etcd* /usr/local/bin/
         "
     done
 

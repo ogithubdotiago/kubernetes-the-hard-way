@@ -195,10 +195,12 @@ printc "\n# Configurando os nodes\n"
             $PATH_CONFIG/kube-proxy.kubeconfig \
             $PATH_CONFIG/kube-proxy-config.yaml \
             $PATH_CONFIG/kubelet.service \
-            $PATH_CONFIG/kube-proxy.service; do
+            $PATH_CONFIG/kube-proxy.service \
+            $PATH_CONFIG/admin.kubeconfig; do
             vagrant scp ${file} ${worker}:~/
         done
         vagrant ssh $worker -c "
+            sudo mkdir -v -p ~/.kube/
             sudo mv -v ca.crt /var/lib/kubernetes/
             sudo mv -v $worker.crt $worker.key /var/lib/kubelet/
             sudo mv -v $worker.kubeconfig /var/lib/kubelet/kubeconfig
@@ -208,6 +210,7 @@ printc "\n# Configurando os nodes\n"
             sudo mv -v kube-proxy-config.yaml /var/lib/kube-proxy/
             sudo mv -v kubelet.service /etc/systemd/system/
             sudo mv -v kube-proxy.service /etc/systemd/system/
+            sudo mv -v admin.kubeconfig ~/.kube/config
         "
         vagrant ssh $worker -c "
             sudo systemctl daemon-reload

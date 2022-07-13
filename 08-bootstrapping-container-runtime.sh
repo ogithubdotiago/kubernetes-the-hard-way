@@ -74,9 +74,9 @@ printc "\n# Configurando crictl\n"
         printc "\n$worker\n" "yellow"
         vagrant ssh $worker -c "
             wget -q --show-progress --https-only --timestamping \
-            https://github.com/kubernetes-sigs/cri-tools/releases/download/$K8S_VERSION/crictl-$K8S_VERSION-linux-amd64.tar.gz
-            sudo tar -xvf crictl-$K8S_VERSION-linux-amd64.tar.gz
-            sudo chmod +x crictl
+            https://github.com/kubernetes-sigs/cri-tools/releases/download/$CRICTL_VERSION/crictl-$CRICTL_VERSION-linux-amd64.tar.gz
+            sudo tar -xvf crictl-$CRICTL_VERSION-linux-amd64.tar.gz
+            sudo chmod -v +x crictl
             sudo mv -v crictl /usr/local/bin/
             sudo systemctl restart containerd
         "

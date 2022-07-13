@@ -46,7 +46,7 @@ printc "\n# Criando .kubeconfig admin\n"
     kubectl config set-cluster $CLUSTER_NAME \
         --certificate-authority=$PATH_CERT/ca.crt \
         --embed-certs=true \
-        --server=https://127.0.0.1:6443 \
+        --server=https://$IP_LB_MASTER:6443 \
         --kubeconfig=$PATH_CONFIG/admin.kubeconfig
     kubectl config set-credentials admin \
         --client-certificate=$PATH_CERT/admin.crt \

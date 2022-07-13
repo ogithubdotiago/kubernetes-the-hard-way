@@ -63,6 +63,14 @@ EOF
         sudo systemctl restart haproxy
     "
 
+printc "\n# Validando control-plane\n"
+    for master in master-{1..2}; do
+        printc "\n$master\n" "yellow"
+        vagrant ssh $master -c "
+            kubectl cluster-info
+        "
+    done
+
 printc "\n# Validando HAProxy\n"
     for master in master-{1..2}; do
         printc "\n$master\n" "yellow"
