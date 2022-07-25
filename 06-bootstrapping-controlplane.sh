@@ -53,56 +53,57 @@ printc "\n# Configurando kube-apiserver\n"
             sudo mv -v admin.kubeconfig ~/.kube/config
             sudo mv -v ca-login.crt /var/lib/kubernetes/
         "
+
         GET_INTERNAL_IP=$(vagrant ssh $master -c "bash get_internal_ip.sh")
         INTERNAL_IP="${GET_INTERNAL_IP/$'\r'/}"
-
-cat <<EOF | sudo tee $PATH_CONFIG/kube-apiserver-$master.service
-[Unit]
-Description=Kubernetes API Server
-Documentation=https://github.com/kubernetes/kubernetes
-
-[Service]
-ExecStart=/usr/local/bin/kube-apiserver \\
-  --advertise-address=${INTERNAL_IP} \\
-  --allow-privileged=true \\
-  --apiserver-count=3 \\
-  --audit-log-maxage=30 \\
-  --audit-log-maxbackup=3 \\
-  --audit-log-maxsize=100 \\
-  --audit-log-path=/var/log/audit.log \\
-  --authorization-mode=Node,RBAC \\
-  --bind-address=0.0.0.0 \\
-  --client-ca-file=/var/lib/kubernetes/ca.crt \\
-  --enable-admission-plugins=NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
-  --etcd-cafile=/var/lib/kubernetes/ca.crt \\
-  --etcd-certfile=/var/lib/kubernetes/etcd-server.crt \\
-  --etcd-keyfile=/var/lib/kubernetes/etcd-server.key \\
-  --etcd-servers=https://$NET_CIDR.11:2379,https://$NET_CIDR.12:2379 \\
-  --event-ttl=1h \\
-  --encryption-provider-config=/var/lib/kubernetes/encryption-config.yaml \\
-  --kubelet-certificate-authority=/var/lib/kubernetes/ca.crt \\
-  --kubelet-client-certificate=/var/lib/kubernetes/kube-apiserver.crt \\
-  --kubelet-client-key=/var/lib/kubernetes/kube-apiserver.key \\
-  --runtime-config='api/all=true' \\
-  --service-account-key-file=/var/lib/kubernetes/service-account.crt \\
-  --service-account-signing-key-file=/var/lib/kubernetes/service-account.key \\
-  --service-account-issuer=https://${IP_LB_MASTER}:6443 \\
-  --service-cluster-ip-range=$NET_CIDR_SVC \\
-  --service-node-port-range=30000-32767 \\
-  --tls-cert-file=/var/lib/kubernetes/kube-apiserver.crt \\
-  --tls-private-key-file=/var/lib/kubernetes/kube-apiserver.key \\
-  --oidc-issuer-url=https://$IP_LB_WORKER:32000 \\
-  --oidc-client-id=gangway \\
-  --oidc-ca-file=/var/lib/kubernetes/ca-login.crt \\
-  --oidc-username-claim=email \\
-  --oidc-groups-claim=groups \\
-  --v=2
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
+        cat <<-EOF | sudo tee $PATH_CONFIG/kube-apiserver-$master.service
+		[Unit]
+		Description=Kubernetes API Server
+		Documentation=https://github.com/kubernetes/kubernetes
+		
+		[Service]
+		ExecStart=/usr/local/bin/kube-apiserver \\
+		  --advertise-address=${INTERNAL_IP} \\
+		  --allow-privileged=true \\
+		  --apiserver-count=3 \\
+		  --audit-log-maxage=30 \\
+		  --audit-log-maxbackup=3 \\
+		  --audit-log-maxsize=100 \\
+		  --audit-log-path=/var/log/audit.log \\
+		  --authorization-mode=Node,RBAC \\
+		  --bind-address=0.0.0.0 \\
+		  --client-ca-file=/var/lib/kubernetes/ca.crt \\
+		  --enable-admission-plugins=NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
+		  --etcd-cafile=/var/lib/kubernetes/ca.crt \\
+		  --etcd-certfile=/var/lib/kubernetes/etcd-server.crt \\
+		  --etcd-keyfile=/var/lib/kubernetes/etcd-server.key \\
+		  --etcd-servers=https://$NET_CIDR.11:2379,https://$NET_CIDR.12:2379 \\
+		  --event-ttl=1h \\
+		  --encryption-provider-config=/var/lib/kubernetes/encryption-config.yaml \\
+		  --kubelet-certificate-authority=/var/lib/kubernetes/ca.crt \\
+		  --kubelet-client-certificate=/var/lib/kubernetes/kube-apiserver.crt \\
+		  --kubelet-client-key=/var/lib/kubernetes/kube-apiserver.key \\
+		  --runtime-config='api/all=true' \\
+		  --service-account-key-file=/var/lib/kubernetes/service-account.crt \\
+		  --service-account-signing-key-file=/var/lib/kubernetes/service-account.key \\
+		  --service-account-issuer=https://${IP_LB_MASTER}:6443 \\
+		  --service-cluster-ip-range=$NET_CIDR_SVC \\
+		  --service-node-port-range=30000-32767 \\
+		  --tls-cert-file=/var/lib/kubernetes/kube-apiserver.crt \\
+		  --tls-private-key-file=/var/lib/kubernetes/kube-apiserver.key \\
+		  --oidc-issuer-url=https://$IP_LB_WORKER:32000 \\
+		  --oidc-client-id=gangway \\
+		  --oidc-ca-file=/var/lib/kubernetes/ca-login.crt \\
+		  --oidc-username-claim=email \\
+		  --oidc-groups-claim=groups \\
+		  --v=2
+		Restart=on-failure
+		RestartSec=5
+		
+		[Install]
+		WantedBy=multi-user.target
+		EOF
+        printc "$(ls -1 $PATH_CONFIG/kube-apiserver-$master.service)\n" "yellow"
 
         vagrant scp $PATH_CONFIG/kube-apiserver-$master.service ${master}:~/
         vagrant ssh $master -c "
@@ -121,31 +122,32 @@ printc "\n# Configurando kube-controller-manager\n"
             sudo cp -v kube-controller-manager.kubeconfig /var/lib/kubernetes/
         "
 
-cat <<EOF | sudo tee $PATH_CONFIG/kube-controller-manager.service
-[Unit]
-Description=Kubernetes Controller Manager
-Documentation=https://github.com/kubernetes/kubernetes
-
-[Service]
-ExecStart=/usr/local/bin/kube-controller-manager \\
-  --address=0.0.0.0 \\
-  --cluster-cidr=$NET_CIDR_POD \\
-  --cluster-name=kubernetes \\
-  --cluster-signing-cert-file=/var/lib/kubernetes/ca.crt \\
-  --cluster-signing-key-file=/var/lib/kubernetes/ca.key \\
-  --kubeconfig=/var/lib/kubernetes/kube-controller-manager.kubeconfig \\
-  --leader-elect=true \\
-  --root-ca-file=/var/lib/kubernetes/ca.crt \\
-  --service-account-private-key-file=/var/lib/kubernetes/service-account.key \\
-  --service-cluster-ip-range=$NET_CIDR_SVC \\
-  --use-service-account-credentials=true \\
-  --v=2
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
+        cat <<-EOF | sudo tee $PATH_CONFIG/kube-controller-manager.service
+		[Unit]
+		Description=Kubernetes Controller Manager
+		Documentation=https://github.com/kubernetes/kubernetes
+		
+		[Service]
+		ExecStart=/usr/local/bin/kube-controller-manager \\
+		  --address=0.0.0.0 \\
+		  --cluster-cidr=$NET_CIDR_POD \\
+		  --cluster-name=kubernetes \\
+		  --cluster-signing-cert-file=/var/lib/kubernetes/ca.crt \\
+		  --cluster-signing-key-file=/var/lib/kubernetes/ca.key \\
+		  --kubeconfig=/var/lib/kubernetes/kube-controller-manager.kubeconfig \\
+		  --leader-elect=true \\
+		  --root-ca-file=/var/lib/kubernetes/ca.crt \\
+		  --service-account-private-key-file=/var/lib/kubernetes/service-account.key \\
+		  --service-cluster-ip-range=$NET_CIDR_SVC \\
+		  --use-service-account-credentials=true \\
+		  --v=2
+		Restart=on-failure
+		RestartSec=5
+		
+		[Install]
+		WantedBy=multi-user.target
+		EOF
+        printc "$(ls -1 $PATH_CONFIG/kube-controller-manager.service)\n" "yellow"
 
         vagrant scp $PATH_CONFIG/kube-controller-manager.service ${master}:~/
         vagrant ssh $master -c "
@@ -164,23 +166,24 @@ printc "\n# Configurando kube-scheduler\n"
             sudo cp -v kube-scheduler.kubeconfig /var/lib/kubernetes/
         "
 
-cat <<EOF | sudo tee $PATH_CONFIG/kube-scheduler.service
-[Unit]
-Description=Kubernetes Scheduler
-Documentation=https://github.com/kubernetes/kubernetes
-
-[Service]
-ExecStart=/usr/local/bin/kube-scheduler \\
-  --kubeconfig=/var/lib/kubernetes/kube-scheduler.kubeconfig \\
-  --address=127.0.0.1 \\
-  --leader-elect=true \\
-  --v=2
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
+        cat <<-EOF | sudo tee $PATH_CONFIG/kube-scheduler.service
+		[Unit]
+		Description=Kubernetes Scheduler
+		Documentation=https://github.com/kubernetes/kubernetes
+		
+		[Service]
+		ExecStart=/usr/local/bin/kube-scheduler \\
+		  --kubeconfig=/var/lib/kubernetes/kube-scheduler.kubeconfig \\
+		  --address=127.0.0.1 \\
+		  --leader-elect=true \\
+		  --v=2
+		Restart=on-failure
+		RestartSec=5
+		
+		[Install]
+		WantedBy=multi-user.target
+		EOF
+        printc "$(ls -1 $PATH_CONFIG/kube-scheduler.service)\n" "yellow"
 
         vagrant scp $PATH_CONFIG/kube-scheduler.service ${master}:~/
         vagrant ssh $master -c "

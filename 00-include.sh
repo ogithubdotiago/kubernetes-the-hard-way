@@ -29,11 +29,9 @@ HELM_VERSION="v3.9.0"
 KUBECTX_VERSION="v0.9.4"
 KUBENS_VERSION="v0.9.4"
 CALICO_VERSION="v3.20.0"
-
-#addons
-PATH_LDAP="addons/ldap"
-PATH_DEX="addons/dex"
-PATH_GANGWAY="addons/gangway"
+OPENLDAP_VERSION="1.5.0"
+DEX_VERSION="v2.30.0"
+GANGWAY_VERSION="v3.0.0"
 
 #custom_print
 printc() {

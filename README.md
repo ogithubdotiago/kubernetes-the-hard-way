@@ -17,6 +17,7 @@ Instalação cluster kubernetes no modo "The Hard Way" via Virtualbox com auxili
 * [Containerd](https://github.com/containerd/containerd) v1.5.10
 * [CNI](https://github.com/containernetworking/cni) v1.1.1
 * [Weave Net](https://www.weave.works/docs/net/latest/kubernetes/kube-addon/) v2.8.1
+* [Calico](https://projectcalico.docs.tigera.io/getting-started/kubernetes/) v3.20.0
 * [etcd](https://github.com/coreos/etcd) v3.5.0
 * [CoreDNS](https://github.com/coredns/coredns) v1.9.3
 

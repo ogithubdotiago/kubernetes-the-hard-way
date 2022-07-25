@@ -6,7 +6,7 @@ printc "\n# Execute este comando para rodar o vagrant sem estar no path\n"
     echo export VAGRANT_CWD="$(pwd)/vagrant/"
 
 printc "\n# Visualizando dhcp virtualbox\n"
-printc "Rede definida neste lab: $NET_CIDR\n" "yellow"
+    printf "Rede definida neste lab: $NET_CIDR\n"
     VBoxManage list dhcpservers |egrep 'LowerIPAddress|UpperIPAddress|NetworkMask'
 
 printc "\n# Instalando plugin vagrant scp\n"

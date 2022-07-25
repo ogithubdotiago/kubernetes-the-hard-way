@@ -17,6 +17,4 @@ source 10-boostrapping-network-cni-plugin.sh ; sleep 5
 source 11-bootstrapping-network-calico.sh ; sleep 5
 source 12-configure-apiserver-to-kubelet.sh ; sleep 5
 source 13-bootstrapping-dns.sh; sleep 5
-
-#addons
-#source 14-bootstrapping-gangway-dex-ldap.sh; sleep 5
+source 14-bootstrapping-gangway-dex-ldap.sh; sleep 5

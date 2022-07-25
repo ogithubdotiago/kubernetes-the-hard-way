@@ -18,36 +18,29 @@ printc "\n# Instalacao containerd $CONTAINERD_VERSION\n"
     done
 
 printc "\n# Configurando containerd\n"
-    for worker in worker-{1..2}; do
-        printc "\n$worker\n" "yellow"
-        vagrant ssh $worker -c " 
-            sudo mkdir -v -p /etc/containerd/
-        "
-    done
+    cat <<-EOF | sudo tee $PATH_CONFIG/config.toml
+	[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+	  SystemdCgroup = true
+	EOF
+    printc "$(ls -1 $PATH_CONFIG/config.toml)\n" "yellow"
 
-cat << EOF | sudo tee $PATH_CONFIG/config.toml
-[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-  SystemdCgroup = true
-EOF
-printc "$(ls -1 $PATH_CONFIG/config.toml)\n" "yellow"
+    cat <<-EOF | sudo tee $PATH_CONFIG/containerd.conf
+	overlay
+	br_netfilter
+	EOF
+    printc "$(ls -1 $PATH_CONFIG/containerd.conf)\n" "yellow"
 
-cat <<EOF | sudo tee $PATH_CONFIG/containerd.conf
-overlay
-br_netfilter
-EOF
-printc "$(ls -1 $PATH_CONFIG/containerd.conf)\n" "yellow"
+    cat <<-EOF | sudo tee $PATH_CONFIG/99-kubernetes-cri.conf
+	net.bridge.bridge-nf-call-iptables  = 1
+	net.ipv4.ip_forward                 = 1
+	net.bridge.bridge-nf-call-ip6tables = 1
+	EOF
+    printc "$(ls -1 $PATH_CONFIG/99-kubernetes-cri.conf)\n" "yellow"
 
-cat <<EOF | sudo tee $PATH_CONFIG/99-kubernetes-cri.conf
-net.bridge.bridge-nf-call-iptables  = 1
-net.ipv4.ip_forward                 = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-EOF
-printc "$(ls -1 $PATH_CONFIG/99-kubernetes-cri.conf)\n" "yellow"
-
-cat <<EOF | sudo tee $PATH_CONFIG/crictl.yaml
-runtime-endpoint: unix:///run/containerd/containerd.sock
-EOF
-printc "$(ls -1 $PATH_CONFIG/crictl.yaml)\n" "yellow"
+    cat <<-EOF | sudo tee $PATH_CONFIG/crictl.yaml
+	runtime-endpoint: unix:///run/containerd/containerd.sock
+	EOF
+    printc "$(ls -1 $PATH_CONFIG/crictl.yaml)\n" "yellow"
 
     for worker in worker-{1..2}; do
         printc "\n$worker\n" "yellow"

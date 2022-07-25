@@ -8,28 +8,29 @@ printc "#############################\n"
 
 printc "\n# Criando certificado para o kubelet\n"
     for worker in worker-{1..2}; do
-    printc "\n$worker\n" "yellow"
-    [ $worker == worker-1 ] && ip="21" || ip="22"
+        printc "\n$worker\n" "yellow"
+        [ $worker == worker-1 ] && ip="21" || ip="22"
+        cat <<-EOF | sudo tee $PATH_CERT/openssl-$worker.cnf
+		[req]
+		req_extensions = v3_req
+		distinguished_name = req_distinguished_name
+		[req_distinguished_name]
+		[ v3_req ]
+		basicConstraints = CA:FALSE
+		keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+		subjectAltName = @alt_names
+		[alt_names]
+		DNS.1 = $worker
+		IP.1 = $NET_CIDR.$ip
+		EOF
+        printc "$(ls -1 $PATH_CERT/openssl-$worker.cnf)\n" "yellow"
 
-cat > $PATH_CERT/openssl-$worker.cnf <<EOF
-[req]
-req_extensions = v3_req
-distinguished_name = req_distinguished_name
-[req_distinguished_name]
-[ v3_req ]
-basicConstraints = CA:FALSE
-keyUsage = nonRepudiation, digitalSignature, keyEncipherment
-subjectAltName = @alt_names
-[alt_names]
-DNS.1 = $worker
-IP.1 = $NET_CIDR.$ip
-EOF
-
-    openssl genrsa -out $PATH_CERT/$worker.key 2048
-    openssl req -new -key $PATH_CERT/$worker.key -subj "/CN=system:node:$worker/O=system:nodes" \
-        -out $PATH_CERT/$worker.csr -config $PATH_CERT/openssl-$worker.cnf
-    openssl x509 -req -in $PATH_CERT/$worker.csr -CA $PATH_CERT/ca.crt -CAkey $PATH_CERT/ca.key -CAcreateserial \
-        -out $PATH_CERT/$worker.crt -extensions v3_req -extfile $PATH_CERT/openssl-$worker.cnf -days $CERT_DAYS
+        openssl genrsa -out $PATH_CERT/$worker.key 2048
+        openssl req -new -key $PATH_CERT/$worker.key -subj "/CN=system:node:$worker/O=system:nodes" \
+            -out $PATH_CERT/$worker.csr -config $PATH_CERT/openssl-$worker.cnf
+        openssl x509 -req -in $PATH_CERT/$worker.csr -CA $PATH_CERT/ca.crt -CAkey $PATH_CERT/ca.key -CAcreateserial \
+            -out $PATH_CERT/$worker.crt -extensions v3_req -extfile $PATH_CERT/openssl-$worker.cnf -days $CERT_DAYS
+        printc "$(ls -1 $PATH_CERT/$worker*)\n" "yellow"
     done
 
 printc "\n# Criando certificado kube-proxy\n"
@@ -38,6 +39,7 @@ printc "\n# Criando certificado kube-proxy\n"
         -out $PATH_CERT/kube-proxy.csr
     openssl x509 -req -in $PATH_CERT/kube-proxy.csr -CA $PATH_CERT/ca.crt -CAkey $PATH_CERT/ca.key -CAcreateserial \
         -out $PATH_CERT/kube-proxy.crt -days $CERT_DAYS
+    printc "$(ls -1 $PATH_CERT/kube-proxy*)\n" "yellow"
 
 printc "\n# Criando kubelet .kubeconfig\n"
     for worker in worker-{1..2}; do
@@ -57,6 +59,7 @@ printc "\n# Criando kubelet .kubeconfig\n"
             --user=system:node:$worker \
             --kubeconfig=$PATH_CONFIG/$worker.kubeconfig
         kubectl config use-context default --kubeconfig=$PATH_CONFIG/$worker.kubeconfig
+        printc "$(ls -1 $PATH_CONFIG/$worker.kubeconfig)\n" "yellow"
     done
 
 printc "\n# Criando kube-proxy .kubeconfig\n"
@@ -75,82 +78,87 @@ printc "\n# Criando kube-proxy .kubeconfig\n"
         --user=system:kube-proxy \
         --kubeconfig=$PATH_CONFIG/kube-proxy.kubeconfig
     kubectl config use-context default --kubeconfig=$PATH_CONFIG/kube-proxy.kubeconfig
+    printc "$(ls -1 $PATH_CONFIG/kube-proxy.kubeconfig)\n" "yellow"
 
 printc "\n# Criando kubelet-config.yaml\n"
     for worker in worker-{1..2}; do
-    printc "\n$worker\n" "yellow"
-cat <<EOF | sudo tee $PATH_CONFIG/kubelet-config-$worker.yaml
-kind: KubeletConfiguration
-apiVersion: kubelet.config.k8s.io/v1beta1
-authentication:
-  anonymous:
-    enabled: false
-  webhook:
-    enabled: true
-  x509:
-    clientCAFile: "/var/lib/kubernetes/ca.crt"
-tlsCertFile: "/var/lib/kubelet/$worker.crt"
-tlsPrivateKeyFile: "/var/lib/kubelet/$worker.key"
-authorization:
-  mode: Webhook
-clusterDomain: "cluster.local"
-clusterDNS:
-  - "$IP_SVC_DNS"
-resolvConf: "/run/systemd/resolve/resolv.conf"
-runtimeRequestTimeout: "15m"
-EOF
+        printc "\n$worker\n" "yellow"
+        cat <<-EOF | sudo tee $PATH_CONFIG/kubelet-config-$worker.yaml
+		kind: KubeletConfiguration
+		apiVersion: kubelet.config.k8s.io/v1beta1
+		authentication:
+		  anonymous:
+		    enabled: false
+		  webhook:
+		    enabled: true
+		  x509:
+		    clientCAFile: "/var/lib/kubernetes/ca.crt"
+		tlsCertFile: "/var/lib/kubelet/$worker.crt"
+		tlsPrivateKeyFile: "/var/lib/kubelet/$worker.key"
+		authorization:
+		  mode: Webhook
+		clusterDomain: "cluster.local"
+		clusterDNS:
+		  - "$IP_SVC_DNS"
+		resolvConf: "/run/systemd/resolve/resolv.conf"
+		runtimeRequestTimeout: "15m"
+		EOF
+        printc "$(ls -1 $PATH_CONFIG/kubelet-config-$worker.yaml)\n" "yellow"
     done
 
 printc "\n# Criando kube-proxy-config.yaml\n"
-cat <<EOF | sudo tee $PATH_CONFIG/kube-proxy-config.yaml
-kind: KubeProxyConfiguration
-apiVersion: kubeproxy.config.k8s.io/v1alpha1
-clientConnection:
-  kubeconfig: "/var/lib/kube-proxy/kubeconfig"
-mode: "iptables"
-clusterCIDR: "$NET_CIDR.0/24"
-EOF
+    cat <<-EOF | sudo tee $PATH_CONFIG/kube-proxy-config.yaml
+	kind: KubeProxyConfiguration
+	apiVersion: kubeproxy.config.k8s.io/v1alpha1
+	clientConnection:
+	  kubeconfig: "/var/lib/kube-proxy/kubeconfig"
+	mode: "iptables"
+	clusterCIDR: "$NET_CIDR.0/24"
+	EOF
+    printc "$(ls -1 $PATH_CONFIG/kube-proxy-config.yaml)\n" "yellow"
 
 printc "\n# Criando kubelet systemd\n"
-cat <<EOF | sudo tee $PATH_CONFIG/kubelet.service
-[Unit]
-Description=Kubernetes Kubelet
-Documentation=https://github.com/kubernetes/kubernetes
-After=containerd.service
-Requires=containerd.service
-
-[Service]
-ExecStart=/usr/local/bin/kubelet \\
-  --config=/var/lib/kubelet/kubelet-config.yaml \\
-  --container-runtime=remote \\
-  --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
-  --image-pull-progress-deadline=2m \\
-  --kubeconfig=/var/lib/kubelet/kubeconfig \\
-  --network-plugin=cni \\
-  --register-node=true \\
-  --v=2
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
+    cat <<-EOF | sudo tee $PATH_CONFIG/kubelet.service
+	[Unit]
+	Description=Kubernetes Kubelet
+	Documentation=https://github.com/kubernetes/kubernetes
+	After=containerd.service
+	Requires=containerd.service
+	
+	[Service]
+	ExecStart=/usr/local/bin/kubelet \\
+	  --config=/var/lib/kubelet/kubelet-config.yaml \\
+	  --container-runtime=remote \\
+	  --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
+	  --image-pull-progress-deadline=2m \\
+	  --kubeconfig=/var/lib/kubelet/kubeconfig \\
+	  --network-plugin=cni \\
+	  --register-node=true \\
+	  --v=2
+	Restart=on-failure
+	RestartSec=5
+	
+	[Install]
+	WantedBy=multi-user.target
+	EOF
+    printc "$(ls -1 $PATH_CONFIG/kubelet.service)\n" "yellow"
 
 printc "\n# Criando kube-proxy systemd\n"
-cat <<EOF | sudo tee $PATH_CONFIG/kube-proxy.service
-[Unit]
-Description=Kubernetes Kube Proxy
-Documentation=https://github.com/kubernetes/kubernetes
-
-[Service]
-ExecStart=/usr/local/bin/kube-proxy \\
-  --config=/var/lib/kube-proxy/kube-proxy-config.yaml
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
+    cat <<-EOF | sudo tee $PATH_CONFIG/kube-proxy.service
+	[Unit]
+	Description=Kubernetes Kube Proxy
+	Documentation=https://github.com/kubernetes/kubernetes
+	
+	[Service]
+	ExecStart=/usr/local/bin/kube-proxy \\
+	  --config=/var/lib/kube-proxy/kube-proxy-config.yaml
+	Restart=on-failure
+	RestartSec=5
+	
+	[Install]
+	WantedBy=multi-user.target
+	EOF
+    printc "$(ls -1 $PATH_CONFIG/kube-proxy.service)\n" "yellow"
 
 printc "\n# Criando diretorio de configuracao dos nodes\n"
     for worker in worker-{1..2}; do

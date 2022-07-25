@@ -22,7 +22,7 @@ printc "\n# Criando .kubeconfig kube-controller-manager\n"
         --user=system:kube-controller-manager \
         --kubeconfig=$PATH_CONFIG/kube-controller-manager.kubeconfig
     kubectl config use-context default --kubeconfig=$PATH_CONFIG/kube-controller-manager.kubeconfig
-printc "$(ls -1 $PATH_CONFIG/kube-controller-manager.kubeconfig)\n" "yellow"
+    printc "$(ls -1 $PATH_CONFIG/kube-controller-manager.kubeconfig)\n" "yellow"
 
 printc "\n# Criando .kubeconfig kube-scheduler\n"
     kubectl config set-cluster $CLUSTER_NAME \
@@ -40,7 +40,7 @@ printc "\n# Criando .kubeconfig kube-scheduler\n"
         --user=system:kube-scheduler \
         --kubeconfig=$PATH_CONFIG/kube-scheduler.kubeconfig
     kubectl config use-context default --kubeconfig=$PATH_CONFIG/kube-scheduler.kubeconfig
-printc "$(ls -1 $PATH_CONFIG/kube-scheduler.kubeconfig)\n" "yellow"
+    printc "$(ls -1 $PATH_CONFIG/kube-scheduler.kubeconfig)\n" "yellow"
 
 printc "\n# Criando .kubeconfig admin\n"
     kubectl config set-cluster $CLUSTER_NAME \
@@ -59,4 +59,4 @@ printc "\n# Criando .kubeconfig admin\n"
         --kubeconfig=$PATH_CONFIG/admin.kubeconfig \
         --namespace=kube-system
     kubectl config use-context default --kubeconfig=$PATH_CONFIG/admin.kubeconfig
-printc "$(ls -1 $PATH_CONFIG/admin.kubeconfig)\n" "yellow"
+    printc "$(ls -1 $PATH_CONFIG/admin.kubeconfig)\n" "yellow"
