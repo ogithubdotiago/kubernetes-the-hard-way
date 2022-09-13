@@ -7,7 +7,7 @@ printc "# Configurando Load Balancer HAProxy #\n"
 printc "######################################\n"
 
 printc "\n# Download HAProxy $HAPROXY_VERSION\n"
-    vagrant ssh loadbalancer -c "
+    vagrant ssh lb-1 -c "
         sudo apt-get -y update \
         && sudo apt-get install -q -y haproxy=$HAPROXY_VERSION*
     "
@@ -55,8 +55,8 @@ printc "\n# Configurando HAProxy $HAPROXY_VERSION\n"
 	EOF
 	printc "$(ls -1 $PATH_CONFIG/haproxy.cfg)\n" "yellow"
 
-    vagrant scp $PATH_CONFIG/haproxy.cfg loadbalancer:~/
-    vagrant ssh loadbalancer -c "
+    vagrant scp $PATH_CONFIG/haproxy.cfg lb-1:~/
+    vagrant ssh lb-1 -c "
         sudo mv -v haproxy.cfg /etc/haproxy/haproxy.cfg
         sudo systemctl daemon-reload
         sudo systemctl enable haproxy

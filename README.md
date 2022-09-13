@@ -6,20 +6,25 @@ Instalação cluster kubernetes no modo "The Hard Way" via Virtualbox com auxili
 
 ## Detalhes do ambiente
 
-* [Ubuntu](https://app.vagrantup.com/ubuntu/boxes/jammy64) 22.04 LTS
-* [Virtualbox](https://www.virtualbox.org/wiki/Downloads) v6.1.32
-* [Vagrant](https://www.vagrantup.com/downloads) v2.2.19
-* [HAProxy](http://www.haproxy.org/#down) v2.4.14
+| descricao | version |
+|:----------|:--------|
+| ubuntu    | 22.04   |
+| qemu      | 6.2.0   |
+| libvirtd  | 8.0.0   |
+| vagrant   | 2.2.19  |
+| haproxy   | 2.4.14  |
 
 ## Detalhes do cluster
 
-* [Kubernetes](https://github.com/kubernetes/kubernetes) v1.20.0
-* [Containerd](https://github.com/containerd/containerd) v1.5.10
-* [CNI](https://github.com/containernetworking/cni) v1.1.1
-* [Weave Net](https://www.weave.works/docs/net/latest/kubernetes/kube-addon/) v2.8.1
-* [Calico](https://projectcalico.docs.tigera.io/getting-started/kubernetes/) v3.20.0
-* [etcd](https://github.com/coreos/etcd) v3.5.0
-* [CoreDNS](https://github.com/coredns/coredns) v1.9.3
+| descricao  | version |
+|:-----------|:--------|
+| kubernetes | 1.20.8  |
+| containerd | 1.5.10  |
+| cni        | 1.1.1   |
+| weave net  | 2.8.1   |
+| calico     | 3.20.0  |
+| etcd       | 3.5.0   |
+| coredns    | 1.9.3   |
 
 ## Laboratório
 
@@ -33,7 +38,7 @@ Instalação cluster kubernetes no modo "The Hard Way" via Virtualbox com auxili
 | master-2     | 192.168.56.11 |
 | worker-1     | 192.168.56.21 |
 | worker-2     | 192.168.56.22 |
-| loadbalancer | 192.168.56.30 |
+| lb-1         | 192.168.56.30 |
 
 #### Definir path para diretorio do vagrant
 

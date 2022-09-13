@@ -2,6 +2,7 @@
 
 source $(dirname $0)/00-include.sh
 
+rm -rf $PATH_VAGRANT/.vagrant/
 rm -f $PATH_CERT/*.crt
 rm -f $PATH_CERT/*.key
 rm -f $PATH_CERT/*.csr

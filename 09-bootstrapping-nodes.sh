@@ -208,6 +208,7 @@ printc "\n# Configurando os nodes\n"
             vagrant scp ${file} ${worker}:~/
         done
         vagrant ssh $worker -c "
+            sudo swapoff -a
             sudo mkdir -v -p ~/.kube/
             sudo mv -v ca.crt /var/lib/kubernetes/
             sudo mv -v $worker.crt $worker.key /var/lib/kubelet/

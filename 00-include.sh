@@ -14,6 +14,7 @@ IP_LB_MASTER="192.168.56.30"
 IP_LB_WORKER="192.168.56.40"
 
 #path
+PATH_VAGRANT="vagrant"
 PATH_CONFIG="config"
 PATH_CERT="certificate"
 
