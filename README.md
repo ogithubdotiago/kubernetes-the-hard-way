@@ -2,7 +2,7 @@
 
 > Este material é uma cópia dos materiais originais [kelseyhightower](https://github.com/kelseyhightower/kubernetes-the-hard-way) e [mmumshad/kodekloud](https://github.com/mmumshad/kubernetes-the-hard-way) para fins educacionais.
 
-Instalação cluster kubernetes no modo "The Hard Way" via Virtualbox com auxilio de scripts.
+Instalação cluster kubernetes no modo "The Hard Way" via vagrant/libvirt com auxilio de shell script.
 
 ## Detalhes do ambiente
 
@@ -55,7 +55,7 @@ bash 01-configure-prerequisites.sh
 
 #### Instalação maquinas virtuais
 ```bash
-vagrant up
+VAGRANT_CWD="$(pwd)/vagrant/" vagrant up
 ```
 
 #### Instalação cluster kubernetes
