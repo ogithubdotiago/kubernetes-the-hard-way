@@ -6,6 +6,9 @@ printc "\n###################################################\n"
 printc "# Provisionando uma CA e gerando Certificados TLS #\n"
 printc "###################################################\n"
 
+printc "\n# Criando diretorio para certificados\n"
+	mkdir -p -v $PATH_CERT/
+
 printc "\n# Criando CA para ser usada para gerar certificados TLS adicionais\n"
     openssl genrsa -out $PATH_CERT/ca.key 2048
     openssl req -new -key $PATH_CERT/ca.key -subj "/CN=KUBERNETES-CA" -out $PATH_CERT/ca.csr
