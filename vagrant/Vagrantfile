@@ -33,7 +33,9 @@ Vagrant.configure("2") do |config|
       end
       libvirt.vm.hostname = "master-#{i}"
       libvirt.vm.network :private_network, ip: NETWORK + "#{IP_MASTER_START + i}"
-      libvirt.vm.provision "post-install", type: "shell", :path => "post-install.sh"
+      libvirt.vm.provision "post-install", type: "shell", :path => "post-install.sh" do |s|
+        s.args = [NETWORK]
+      end
     end
   end
 
@@ -46,7 +48,9 @@ Vagrant.configure("2") do |config|
       libvirt.vm.hostname = "lb-#{i}"
       libvirt.vm.network :private_network, ip: NETWORK + "#{IP_MASTER_LB_START}"
       libvirt.vm.network :private_network, ip: NETWORK + "#{IP_NODE_LB_START}"
-      libvirt.vm.provision "post-install", type: "shell", :path => "post-install.sh"
+      libvirt.vm.provision "post-install", type: "shell", :path => "post-install.sh" do |s|
+        s.args = [NETWORK]
+      end
     end
   end
 
@@ -58,7 +62,9 @@ Vagrant.configure("2") do |config|
       end
       libvirt.vm.hostname = "worker-#{i}"
       libvirt.vm.network :private_network, ip: NETWORK + "#{IP_NODE_START + i}"
-      libvirt.vm.provision "post-install", type: "shell", :path => "post-install.sh"
+      libvirt.vm.provision "post-install", type: "shell", :path => "post-install.sh" do |s|
+        s.args = [NETWORK]
+      end
     end
   end
 
